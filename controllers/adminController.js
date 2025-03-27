@@ -1,11 +1,11 @@
-import Movie from '../models/Movie.js';
+import Product from '../models/Product.js';
 import User from '../models/User.js';
 
 
-export const createMovie = async (req, res) => {
+export const createProduct = async (req, res) => {
     try {
         const { title, year, genres, description, language, videoLink, trailerLink, price } = req.body;
-        const movie = new Movie({
+        const product = new Product({
             title,
             year,
             genres,
@@ -16,34 +16,34 @@ export const createMovie = async (req, res) => {
             price
         });
 
-        await movie.save();
-        res.status(201).json(movie);
+        await product.save();
+        res.status(201).json(product);
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong' });
     }
 };
 
-export const updateMovie = async (req, res) => {
+export const updateProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const updatedMovie = await Movie.findByIdAndUpdate(id, req.body, { new: true });
-        if (!updatedMovie) {
-            return res.status(404).json({ message: 'Movie not found' });
+        const updatedProduct = await Product.findByIdAndUpdate(id, req.body, { new: true });
+        if (!updatedProduct) {
+            return res.status(404).json({ message: 'Product not found' });
         }
-        res.status(200).json(updatedMovie);
+        res.status(200).json(updatedProduct);
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong' });
     }
 };
 
-export const deleteMovie = async (req, res) => {
+export const deleteProduct = async (req, res) => {
     try {
         const { id } = req.params;
-        const deletedMovie = await Movie.findByIdAndDelete(id);
-        if (!deletedMovie) {
-            return res.status(404).json({ message: 'Movie not found' });
+        const deletedProduct = await Product.findByIdAndDelete(id);
+        if (!deletedProduct) {
+            return res.status(404).json({ message: 'Product not found' });
         }
-        res.status(200).json({ message: 'Movie deleted successfully' });
+        res.status(200).json({ message: 'Product deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong' });
     }
@@ -51,18 +51,18 @@ export const deleteMovie = async (req, res) => {
 
 export const getAllUsers = async (req, res) => {
     try {
-        // Retrieve users and populate the 'purchasedMovies' with movie data
+        // Retrieve users and populate the 'purchasedProducts' with product data
         const users = await User.find()
             .select('-password') // Exclude passwords
-            .populate('purchasedMovies', 'movieId title'); // Populate 'movieId' and 'title' of purchased movies
+            .populate('purchasedProducts', 'productId title'); // Populate 'productId' and 'title' of purchased products
 
-        // Map the purchasedMovies to show movieId and title instead of the whole movie object
+        // Map the purchasedProducts to show productId and title instead of the whole product object
         const result = users.map((user) => {
             return {
                 ...user.toObject(), // Convert the mongoose document to plain object
-                purchasedMovies: user.purchasedMovies.map((movie) => ({
-                    movieId: movie.movieId,
-                    title: movie.title
+                purchasedProducts: user.purchasedProducts.map((product) => ({
+                    productId: product.productId,
+                    title: product.title
                 }))
             };
         });

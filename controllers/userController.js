@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import User from '../models/User.js';
-import Movie from '../models/Movie.js';
+import Product from '../models/Product.js';
 import firebaseStorage from '../utils/firebaseStorage.js'; // Assuming you've already set up firebaseStorage utility
 
 
@@ -122,26 +122,26 @@ export const updateProfilePicture = async (req, res) => {
 
 export const addToWishlist = async (req, res) => {
     try {
-        const { movieId } = req.body;  // Use movieId here
-        console.log(movieId);
-        // Find the movie by its custom movieId
-        const movie = await Movie.findOne({ movieId });  // Use movieId here
-        if (!movie) {
-            return res.status(404).json({ message: 'Movie not found' });
+        const { productId } = req.body;  // Use productId here
+        console.log(productId);
+        // Find the product by its custom productId
+        const product = await Product.findOne({ productId });  // Use productId here
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
         }
         console.log('user', req.user.id)
         const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        // Check if the movie is already in the wishlist
-        if (!user.wishlist.includes(movie._id)) {  // Use movie._id here to add to wishlist
-            user.wishlist.push(movie._id);
+        // Check if the product is already in the wishlist
+        if (!user.wishlist.includes(product._id)) {  // Use product._id here to add to wishlist
+            user.wishlist.push(product._id);
             await user.save();
         }
         // Send the updated user data back in the response
         res.status(200).json({
-            message: 'Movie added to wishlist',
+            message: 'Product added to wishlist',
             updatedUser: user  // Include the updated user data
         });
     } catch (error) {
@@ -155,28 +155,28 @@ export const addToWishlist = async (req, res) => {
 
 export const removeFromWishlist = async (req, res) => {
     try {
-        const { movieId } = req.body; // Use movieId here
-        //console.log(movieId);
-        // Find the movie by its custom movieId
-        const movie = await Movie.findOne({ movieId }); // Use movieId here
-        if (!movie) {
-            return res.status(404).json({ message: 'Movie not found' });
+        const { productId } = req.body; // Use productId here
+        //console.log(productId);
+        // Find the product by its custom productId
+        const product = await Product.findOne({ productId }); // Use productId here
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
         }
         const user = await User.findById(req.user.id);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
-        // Check if the movie is in the wishlist
-        const index = user.wishlist.indexOf(movie._id); // Use movie._id here to remove from wishlist
+        // Check if the product is in the wishlist
+        const index = user.wishlist.indexOf(product._id); // Use product._id here to remove from wishlist
         if (index > -1) {
-            user.wishlist.splice(index, 1); // Remove the movie from the wishlist
+            user.wishlist.splice(index, 1); // Remove the product from the wishlist
             await user.save();
         } else {
-            return res.status(400).json({ message: 'Movie is not in the wishlist' });
+            return res.status(400).json({ message: 'Product is not in the wishlist' });
         }
         // Send the updated user data back in the response
         res.status(200).json({
-            message: 'Movie removed from wishlist',
+            message: 'Product removed from wishlist',
             updatedUser: user // Include the updated user data
         });
     } catch (error) {
@@ -188,12 +188,12 @@ export const removeFromWishlist = async (req, res) => {
 
 export const addToCart = async (req, res) => {
     try {
-        const { movieId } = req.body;
+        const { productId } = req.body;
 
-        // Find the movie by its custom movieId
-        const movie = await Movie.findOne({ movieId });
-        if (!movie) {
-            return res.status(404).json({ message: 'Movie not found' });
+        // Find the product by its custom productId
+        const product = await Product.findOne({ productId });
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
         }
 
         const user = await User.findById(req.user.id);
@@ -201,15 +201,15 @@ export const addToCart = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Check if the movie is already in the cart
-        if (!user.cart.includes(movie._id)) {
-            user.cart.push(movie._id);
+        // Check if the product is already in the cart
+        if (!user.cart.includes(product._id)) {
+            user.cart.push(product._id);
             await user.save();
         }
 
         // Send the updated user data back in the response
         res.status(200).json({
-            message: 'Movie added to cart',
+            message: 'Product added to cart',
             updatedUser: user,
         });
     } catch (error) {
@@ -220,11 +220,11 @@ export const addToCart = async (req, res) => {
 
 export const removeFromCart = async (req, res) => {
     try {
-        const { movieIds } = req.body;
-        console.log(movieIds);
-        // Ensure movieIds is an array
-        if (!Array.isArray(movieIds)) {
-            return res.status(400).json({ message: 'movieIds must be an array' });
+        const { productIds } = req.body;
+        console.log(productIds);
+        // Ensure productIds is an array
+        if (!Array.isArray(productIds)) {
+            return res.status(400).json({ message: 'productIds must be an array' });
         }
 
         const user = await User.findById(req.user.id);
@@ -232,28 +232,28 @@ export const removeFromCart = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Find all valid movies from the provided IDs
-        const movies = await Movie.find({
-            _id: { $in: movieIds }
+        // Find all valid products from the provided IDs
+        const products = await Product.find({
+            _id: { $in: productIds }
         });
 
-        if (movies.length === 0) {
-            return res.status(404).json({ message: 'No valid movies found' });
+        if (products.length === 0) {
+            return res.status(404).json({ message: 'No valid products found' });
         }
 
-        // Get the movie IDs as strings for comparison
-        const validMovieIds = movies.map(movie => movie._id.toString());
+        // Get the product IDs as strings for comparison
+        const validProductIds = products.map(product => product._id.toString());
 
-        // Filter out the valid movie IDs from the user's cart
+        // Filter out the valid product IDs from the user's cart
         user.cart = user.cart.filter(cartItemId =>
-            !validMovieIds.includes(cartItemId.toString())
+            !validProductIds.includes(cartItemId.toString())
         );
 
         await user.save();
 
         // Send the updated user data back in the response
         res.status(200).json({
-            message: 'Movies removed from cart',
+            message: 'Products removed from cart',
             updatedUser: user,
         });
     } catch (error) {
@@ -261,7 +261,7 @@ export const removeFromCart = async (req, res) => {
         res.status(500).json({ error, message: 'Something went wrong' });
     }
 };
-export const checkAndUpdatePurchasedMovies = async (req, res) => {
+export const checkAndUpdatePurchasedProducts = async (req, res) => {
     // console.log(req.body)
     try {
         const user = await User.findById(req.user.id);
@@ -271,7 +271,7 @@ export const checkAndUpdatePurchasedMovies = async (req, res) => {
         }
 
         res.status(200).json({
-            message: 'No new movies added to your purchased list.',
+            message: 'No new products added to your purchased list.',
             user: user,
         });
 
@@ -282,10 +282,10 @@ export const checkAndUpdatePurchasedMovies = async (req, res) => {
 };
 
 
-export const getPurchasedMovies = async (req, res) => {
+export const getPurchasedProducts = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).populate('purchasedMovies');
-        res.status(200).json(user.purchasedMovies);
+        const user = await User.findById(req.user.id).populate('purchasedProducts');
+        res.status(200).json(user.purchasedProducts);
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong' });
     }
@@ -293,7 +293,7 @@ export const getPurchasedMovies = async (req, res) => {
 
 export const getWatchHistory = async (req, res) => {
     try {
-        const user = await User.findById(req.user.id).populate('watchHistory.movie');
+        const user = await User.findById(req.user.id).populate('watchHistory.product');
         res.status(200).json(user.watchHistory);
     } catch (error) {
         res.status(500).json({ message: 'Something went wrong' });
@@ -302,13 +302,13 @@ export const getWatchHistory = async (req, res) => {
 
 export const addToWatchHistory = async (req, res) => {
     try {
-        const { movieId } = req.body;
+        const { productId } = req.body;
         const user = await User.findById(req.user.id);
-        const existingEntry = user.watchHistory.find(entry => entry.movie.toString() === movieId);
+        const existingEntry = user.watchHistory.find(entry => entry.product.toString() === productId);
         if (existingEntry) {
             existingEntry.lastWatched = new Date();
         } else {
-            user.watchHistory.push({ movie: movieId, lastWatched: new Date() });
+            user.watchHistory.push({ product: productId, lastWatched: new Date() });
         }
         await user.save();
         res.status(200).json({ message: 'Watch history updated' });
@@ -323,7 +323,7 @@ export const addToWatchHistory = async (req, res) => {
 
 
 export const toggleUserStatus = async (req, res) => {
-    const { userId } = req.params; // Extract movieId from request parameters
+    const { userId } = req.params; // Extract productId from request parameters
     console.log('Received request for userId:', req.params.userId); // Add logging
     try {
         const user = await User.findOne({ userId });

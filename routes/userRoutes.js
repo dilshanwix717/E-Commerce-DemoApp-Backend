@@ -37,8 +37,8 @@ router.put('/change-password', verifyAccessToken, userController.updatePassword)
 // Other user-related routes
 router.post('/wishlist', verifyAccessToken, userController.addToWishlist);
 router.post('/wishlist/remove', verifyAccessToken, userController.removeFromWishlist);
-router.get('/purchased', verifyAccessToken, userController.getPurchasedMovies);
-router.post('/checkPurchased', verifyAccessToken, userController.checkAndUpdatePurchasedMovies);
+router.get('/purchased', verifyAccessToken, userController.getPurchasedProducts);
+router.post('/checkPurchased', verifyAccessToken, userController.checkAndUpdatePurchasedProducts);
 router.get('/watch-history', verifyAccessToken, userController.getWatchHistory);
 router.post('/watch-history', verifyAccessToken, userController.addToWatchHistory);
 router.post('/cart', verifyAccessToken, userController.addToCart);

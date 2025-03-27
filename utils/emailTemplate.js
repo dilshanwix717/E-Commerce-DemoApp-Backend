@@ -1,14 +1,14 @@
 import dotenv from 'dotenv';
 dotenv.config();
-const createPurchaseConfirmationEmail = (userData, movies, session) => {
-    const moviesHtml = movies.map(movie => `
+const createPurchaseConfirmationEmail = (userData, products, session) => {
+    const productsHtml = products.map(product => `
         <tr>
             <td style="padding: 12px; border-bottom: 1px solid #eee;">
-                <strong>${movie.title} (${movie.year})</strong><br>
-                <span style="color: #888; font-size: 0.9em;">ID: ${movie.movieId}</span>
+                <strong>${product.title} (${product.year})</strong><br>
+                <span style="color: #888; font-size: 0.9em;">ID: ${product.productId}</span>
             </td>
             <td style="padding: 12px; border-bottom: 1px solid #eee; text-align: right;">
-                LKR ${movie.price.toFixed(2)}
+                LKR ${product.price.toFixed(2)}
             </td>
         </tr>
     `).join('');
@@ -50,15 +50,15 @@ const createPurchaseConfirmationEmail = (userData, movies, session) => {
                     <table class="table">
                         <thead>
                             <tr>
-                                <th style="padding: 12px; text-align: left;">Movie Details</th>
+                                <th style="padding: 12px; text-align: left;">Product Details</th>
                                 <th style="padding: 12px; text-align: right;">Price</th>
                             </tr>
                         </thead>
                         <tbody>
-                            ${moviesHtml}
+                            ${productsHtml}
                             <tr class="total-row">
                                 <td style="padding: 12px; border-top: 2px solid #CA168C;">
-                                    <strong>Total (${movies.length} movies)</strong>
+                                    <strong>Total (${products.length} products)</strong>
                                 </td>
                                 <td style="padding: 12px; border-top: 2px solid #CA168C; text-align: right;">
                                     <strong>LKR ${(session.amount_total / 100).toFixed(2)}</strong>
@@ -66,7 +66,7 @@ const createPurchaseConfirmationEmail = (userData, movies, session) => {
                             </tr>
                         </tbody>
                     </table>
-                    <p>You can now access your purchased movies in your library. Simply log in to your account to start watching.</p>
+                    <p>You can now access your purchased products in your library. Simply log in to your account to start watching.</p>
                     <p>If you have any questions about your purchase, please contact our support team.</p>
                     <p>Best regards,<br><strong>Home Cinema Team</strong></p>
                 </div>

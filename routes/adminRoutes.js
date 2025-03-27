@@ -4,9 +4,9 @@ import * as adminController from '../controllers/adminController.js';
 
 const router = express.Router();
 
-router.post('/movies', verifyAccessToken, isAdmin, adminController.createMovie);
-router.put('/movies/:id', verifyAccessToken, isAdmin, adminController.updateMovie);
-router.delete('/movies/:id', verifyAccessToken, isAdmin, adminController.deleteMovie);
+router.post('/products', verifyAccessToken, isAdmin, adminController.createProduct);
+router.put('/products/:id', verifyAccessToken, isAdmin, adminController.updateProduct);
+router.delete('/products/:id', verifyAccessToken, isAdmin, adminController.deleteProduct);
 router.get('/getAllUsers', adminController.getAllUsers);
 router.get('/getAllAdmins', verifyAccessToken, isAdmin, adminController.getAllAdmins);
 

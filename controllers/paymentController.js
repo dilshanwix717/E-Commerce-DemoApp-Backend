@@ -2,7 +2,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 import Stripe from 'stripe';
 import User from '../models/User.js';
-import Movie from '../models/Movie.js';
+import Product from '../models/Product.js';
 import Payment from '../models/Payment.js';
 import { sendPurchaseConfirmationEmail } from '../controllers/emailController.js';
 
@@ -13,31 +13,31 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export const stripeCheckoutSession = async (req, res) => {
     try {
-        const { movieIds } = req.body;
-        // console.log(movieIds);
-        // Fetch all movies based on the provided IDs
-        const movies = await Movie.find({
-            _id: { $in: movieIds }
+        const { productIds } = req.body;
+        // console.log(productIds);
+        // Fetch all products based on the provided IDs
+        const products = await Product.find({
+            _id: { $in: productIds }
         });
 
-        if (!movies.length) {
+        if (!products.length) {
             return res.status(404).json({
-                error: 'No movies found with the provided IDs'
+                error: 'No products found with the provided IDs'
             });
         }
 
-        // Create line items for each movie
-        const lineItems = movies.map(movie => ({
+        // Create line items for each product
+        const lineItems = products.map(product => ({
 
             price_data: {
                 currency: 'lkr',
                 product_data: {
-                    name: movie.title,
-                    description: `${movie.year} • ${movie.duration}`,
-                    // Optional: Add movie image as product image
-                    images: [movie.portraitImage.url]
+                    name: product.title,
+                    description: `${product.year} • ${product.duration}`,
+                    // Optional: Add product image as product image
+                    images: [product.portraitImage.url]
                 },
-                unit_amount: Math.round(movie.price * 100),
+                unit_amount: Math.round(product.price * 100),
 
             },
             quantity: 1,
@@ -51,7 +51,7 @@ export const stripeCheckoutSession = async (req, res) => {
             success_url: `${process.env.WEB_URL}/checkout-success`,
             cancel_url: `${process.env.WEB_URL}/cart`,
             metadata: {
-                movieIds: JSON.stringify(movieIds), // Store movieIds for reference
+                productIds: JSON.stringify(productIds), // Store productIds for reference
                 userId: req.user.id, // Pass the authenticated user's ID
             }
         });
@@ -82,31 +82,31 @@ export const stripeWebhook = async (req, res) => {
         console.log('Stripe session received:', session);
 
         try {
-            const movieIds = JSON.parse(session.metadata.movieIds);
+            const productIds = JSON.parse(session.metadata.productIds);
             const userId = session.metadata.userId;
 
-            // Fetch user and movies
+            // Fetch user and products
             const user = await User.findById(userId);
             if (!user) {
                 console.error('User not found');
                 return res.status(404).send('User not found');
             }
 
-            // Process purchased movies
-            const purchasedMovies = movieIds.filter(id => !user.purchasedMovies.includes(id));
-            if (purchasedMovies.length > 0) {
-                user.purchasedMovies.push(...purchasedMovies);
-                user.cart = user.cart.filter(cartItemId => !movieIds.includes(cartItemId.toString()));
-                user.wishlist = user.wishlist.filter(wishlistItemId => !movieIds.includes(wishlistItemId.toString()));
+            // Process purchased products
+            const purchasedProducts = productIds.filter(id => !user.purchasedProducts.includes(id));
+            if (purchasedProducts.length > 0) {
+                user.purchasedProducts.push(...purchasedProducts);
+                user.cart = user.cart.filter(cartItemId => !productIds.includes(cartItemId.toString()));
+                user.wishlist = user.wishlist.filter(wishlistItemId => !productIds.includes(wishlistItemId.toString()));
 
                 await user.save();
-                console.log('User updated with purchased movies.');
+                console.log('User updated with purchased products.');
             }
 
             // Save payment record
             const payment = new Payment({
                 user: user._id,
-                movie: purchasedMovies,
+                product: purchasedProducts,
                 amount: session.amount_total / 100,
                 stripePaymentId: session.payment_intent,
                 status: 'completed',
@@ -122,7 +122,7 @@ export const stripeWebhook = async (req, res) => {
                         firstName: user.firstName,
                         lastName: user.lastName
                     },
-                    movieIds: purchasedMovies,
+                    productIds: purchasedProducts,
                     session: {
                         amount_total: session.amount_total,
                         payment_intent: session.payment_intent
@@ -155,17 +155,17 @@ export const getAllPayments = async (req, res) => {
     try {
         const payments = await Payment.find()
             .populate('user', 'userId firstName lastName email') // Populate user details
-            .populate('movie', 'movieId title price') // Populate movie details
+            .populate('product', 'productId title price') // Populate product details
             .sort({ createdAt: -1 }); // Sort by the most recent payments
 
-        // Transforming data to include purchasedMovies array
+        // Transforming data to include purchasedProducts array
         const transformedPayments = payments.map(payment => ({
             _id: payment._id,
             userId: payment.user?.userId || 'Unknown User', // Use `userId` from User schema
             userName: payment.user ? `${payment.user.firstName} ${payment.user.lastName || ''}`.trim() : 'Unknown User',
-            purchasedMovies: payment.movie.map(movie => ({
-                movieId: movie.movieId || 'Unknown Movie',
-                title: movie.title || 'Unknown Title',
+            purchasedProducts: payment.product.map(product => ({
+                productId: product.productId || 'Unknown Product',
+                title: product.title || 'Unknown Title',
             })),
             amount: payment.amount,
             stripePaymentId: payment.stripePaymentId,
@@ -190,7 +190,7 @@ export const getPaymentById = async (req, res) => {
     try {
         const payment = await Payment.findById(id)
             .populate('user', 'name email') // Optionally populate the user details
-            .populate('movie', 'title price'); // Optionally populate the movie details
+            .populate('product', 'title price'); // Optionally populate the product details
 
         if (!payment) {
             return res.status(404).json({

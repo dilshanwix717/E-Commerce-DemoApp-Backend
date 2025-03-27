@@ -1,21 +1,21 @@
 // controllers/emailController.js
 import { sendEmail } from '../utils/emailService.js';
 import { createPurchaseConfirmationEmail } from '../utils/emailTemplate.js';
-import Movie from '../models/Movie.js';
+import Product from '../models/Product.js';
 
 // Send purchase confirmation email
 export const sendPurchaseConfirmationEmail = async (req, res) => {
     try {
-        const { user, movieIds, session } = req.body;
-        // Fetch full movie details
-        const movies = await Movie.find({ _id: { $in: movieIds } });
-        if (!movies || movies.length === 0) {
-            throw new Error('No movies found for the given IDs');
+        const { user, productIds, session } = req.body;
+        // Fetch full product details
+        const products = await Product.find({ _id: { $in: productIds } });
+        if (!products || products.length === 0) {
+            throw new Error('No products found for the given IDs');
         }
-        const emailHtml = createPurchaseConfirmationEmail(user, movies, session);
+        const emailHtml = createPurchaseConfirmationEmail(user, products, session);
         const result = await sendEmail(
             user.email,
-            'Purchase Confirmation - Your Movies Are Ready!',
+            'Purchase Confirmation - Your Products Are Ready!',
             emailHtml,
             '',
             []
